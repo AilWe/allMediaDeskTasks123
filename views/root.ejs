@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task1 & Task2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body onload="draw()">
+
+<div>
+    <form action="/" method="post">
+        <label for="">Task1:</label>
+        <input type="text" name="task1" placeholder="string">
+
+        <button type="submit">submit</button>
+    </form>
+    <form action="/" method="post">
+
+        <label>Task2:</label>
+        <input type="text" name="task2" placeholder="number">
+
+        <button type="submit">submit</button>
+    </form>
+    <form action="/" method="post">
+
+        <label>Task3: y=</label>
+        <input type="text" name="task3" placeholder="string">
+
+        <button type="submit">submit</button>
+    </form>
+
+</div>
+
+<div>
+    <p>task1 result:</p>
+    <p><%= task1Result %></p>
+    <p>task2 result:</p>
+    <p><%= task2Result %></p>
+    <p>task3 result:</p>
+    <canvas id="myChart" width="502" height="400"></canvas>
+    <script>
+
+        var calculate = function (str, ind = 0) {
+            if (!str.length) return 0;
+            let stack = [];
+            let curr = 0;
+            let symbol = '+';
+
+            str = str.trim();
+            while (ind < str.length) {
+                if (str[ind] === '(') {
+                    ind++;
+                    let [number, index] = calculate(str, ind);
+                    update(stack, number, symbol);
+                    ind = index++;
+                    symbol = str[ind++];
+                    continue;
+                } else if (str[ind] === ')') {
+                    update(stack, curr, symbol);
+                    return [get(stack), ind];
+                } else {
+                    if (!isNaN(str[ind])) curr = curr * 10 + str[ind].charCodeAt(0) - '0'.charCodeAt(0);
+                    if (isNaN(str[ind]) || ind === str.length - 1) {
+                        update(stack, curr, symbol);
+                        symbol = str[ind];
+                        curr = 0;
+                    }
+                }
+                ind++;
+            }
+            return get(stack);
+        };
+
+        const update = function (stack, curr, symbol) {
+            switch (symbol) {
+                case '+':
+                    stack.push(curr);
+                    break;
+                case '-':
+                    stack.push(-curr);
+                    break;
+                case '*':
+                    stack.push(stack.pop() * curr);
+                    break;
+                case '/':
+                    stack.push(Math.trunc(stack.pop() / curr));
+                    break;
+            }
+        }
+
+        const get = function (stack) {
+            return stack.reduce((a, b) => a + b);
+        }
+        const targetString = "<%= task3Result %>";
+
+        var xValues = [];
+        var yValues = [];
+        for (let i = 0; i < 1000; ++i) {
+            xValues.push(i);
+            let currFunc = targetString;
+            let newStr = currFunc.replace(/x/g, i.toString());
+            let yvalue = calculate(newStr);
+            yValues.push(yvalue);
+        }
+
+        const data = {
+            labels: xValues,
+            datasets: [{
+                label: 'Task3',
+                backgroundColor: 'rgb(0, 0, 0)',
+                data: yValues
+            }]
+        };
+        const config = {
+            type: 'line',
+            data,
+            options: {}
+        };
+        var myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+
+
+    </script>
+
+</div>
+
+</body>
+</html>
